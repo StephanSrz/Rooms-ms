@@ -24,8 +24,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
         statusCode: status,
         timeStamp: new Date().toISOString(),
         path: request.url,
-        error: msg,
-        help: "Please visit documentation : http:\\help.com"
+        error: msg.toString()
       });
   }
 }

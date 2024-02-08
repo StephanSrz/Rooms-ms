@@ -3,13 +3,14 @@ import { RoomsService } from "./rooms.service";
 import { RoomDTO } from "./dto/room.dto";
 import RoomEntity from "./entity/room.entity";
 import { Response } from "express";
+import { MessagePattern, Payload } from "@nestjs/microservices";
+import { RoomsMSG } from "src/common/constants/rabbitmq";
 
-
-@Controller('api/v1/rooms/')
+@Controller()
 export class RoomsController{
   constructor(private readonly roomsService: RoomsService){}
 
-  @Get()
+  @MessagePattern(RoomsMSG.FIND_ALL)
   async getRooms(@Res() res: Response){
     let rooms = await this.roomsService.findRooms(); 
     if(!rooms){
@@ -18,14 +19,14 @@ export class RoomsController{
     return res.status(200).json(rooms);
   }
 
-  @Post()
-  saveRooms(@Body() roomDTO: RoomDTO){
+  @MessagePattern(RoomsMSG.CREATE)
+  saveRooms(@Payload() roomDTO: RoomDTO){
     let roomEntity = new RoomEntity(roomDTO);
     return this.roomsService.saveRoom(roomEntity);
   }
 
-  @Get(':id')
-  async getRoomById(@Param('id') id: String, @Res() res: Response){
+  @MessagePattern(RoomsMSG.FIND_ONE)
+  async getRoomById(@Payload() id: String, @Res() res: Response){
     let roomResult = await this.roomsService.findRoomById(id);
     if(!roomResult){
       return res.status(404).json({ message: `Room with id ${id} Not found` });
@@ -33,18 +34,18 @@ export class RoomsController{
     return res.status(200).json(roomResult);
   }
 
-  @Put(':id')
-  async updateRoom(@Param('id') id: String, @Body() roomDTO: RoomDTO, @Res() res: Response){
-    const roomEntity = new RoomEntity(roomDTO);
-    const roomUpdated = await this.roomsService.updateRoom(id, roomEntity);
+  @MessagePattern(RoomsMSG.UPDATE)
+  async updateRoom(@Payload() payload, @Res() res: Response){
+    const roomEntity = new RoomEntity(payload.roomDTO);
+    const roomUpdated = await this.roomsService.updateRoom(payload.id, roomEntity);
     if(!roomUpdated){
-      return res.status(404).json({ message: `Room with id ${id} Not found` });
+      return res.status(404).json({ message: `Room with id ${payload.id} Not found` });
     }
     return res.status(202).json(roomUpdated);
   }
   
-  @Delete(':id')
-  async deleteRoom(@Param('id') id: String, @Res() res: Response){
+  @MessagePattern(RoomsMSG.DELETE)
+  async deleteRoom(@Payload() id: String, @Res() res: Response){
     const roomDeleted = await this.roomsService.deleteRoom(id);
     if(!roomDeleted){
       return res.status(404).json({ message: `Room with id ${id} Not found` });

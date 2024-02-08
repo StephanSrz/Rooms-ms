@@ -5,17 +5,16 @@ export const RoomSchema = new mongoose.Schema(
     id: String,
     name: String,
     description: {type: String, default: null},
-    roomCode: {type: String, unique: true},
+    roomCode: {type: String},
     maxNumUsers: {type: String, default: null},
     createdBy: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'users'
+      type: String
     },
     users: [{
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'users',
-      unique: true
+      type: String
+      // type: mongoose.Schema.Types.ObjectId,
+      // ref: 'users'
     }]
   },{ timestamps: true }
   );
-RoomSchema.index({ roomCode: 1 }, { unique: true });
+RoomSchema.index({ roomCode: 1 });

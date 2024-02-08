@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common'
 import { Model } from 'mongoose';
 import RoomEntity from './entity/room.entity';
 import { InjectModel } from '@nestjs/mongoose';
-import { ROOMS } from 'src/common/models/user.model';
+import { ROOMS } from 'src/common/models/room.model';
 import { IRooms } from 'src/common/interfaces/rooms.interface';
 
 @Injectable()

@@ -61,9 +61,10 @@ export class RoomsService {
 
   async addUserToRoom(roomId: string, userId: string){
     let userInRoom = await this.findUsersInRoom(roomId);
-    if(userInRoom.includes(userId)){
-      return false;
+    if(userInRoom != null){
+      if(userInRoom.includes(userId)) return false;
     }
+    
     return await this.roomRepository.addUserToRoom(roomId, userId);
   }
 
