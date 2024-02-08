@@ -13,10 +13,8 @@ export class RoomsController{
   @MessagePattern(RoomsMSG.FIND_ALL)
   async getRooms(@Res() res: Response){
     let rooms = await this.roomsService.findRooms(); 
-    if(!rooms){
-      return res.status(404).json({message: "There are not rooms"});
-    }
-    return res.status(200).json(rooms);
+    if(!rooms) return {message: "There are not rooms"}
+    return rooms
   }
 
   @MessagePattern(RoomsMSG.CREATE)
