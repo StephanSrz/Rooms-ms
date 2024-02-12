@@ -4,7 +4,7 @@ import { RoomDTO } from "./dto/room.dto";
 import RoomEntity from "./entity/room.entity";
 import { Response } from "express";
 import { MessagePattern, Payload } from "@nestjs/microservices";
-import { RoomsMSG } from "src/common/constants/rabbitmq";
+import { RoomsMSG, UserInRoomMSG } from "src/common/constants/rabbitmq";
 
 @Controller()
 export class RoomsController{
@@ -24,59 +24,63 @@ export class RoomsController{
   }
 
   @MessagePattern(RoomsMSG.FIND_ONE)
-  async getRoomById(@Payload() id: String, @Res() res: Response){
+  async getRoomById(@Payload() id: String){
     let roomResult = await this.roomsService.findRoomById(id);
     if(!roomResult){
-      return res.status(404).json({ message: `Room with id ${id} Not found` });
+      return { message: `Room with id ${id} Not found` };
     }
-    return res.status(200).json(roomResult);
+    return roomResult;
   }
 
   @MessagePattern(RoomsMSG.UPDATE)
-  async updateRoom(@Payload() payload, @Res() res: Response){
-    const roomEntity = new RoomEntity(payload.roomDTO);
+  async updateRoom(@Payload() payload){
+    const roomEntity = new RoomEntity(payload.roomDto);
     const roomUpdated = await this.roomsService.updateRoom(payload.id, roomEntity);
     if(!roomUpdated){
-      return res.status(404).json({ message: `Room with id ${payload.id} Not found` });
+      return { message: `Room with id ${payload.id} Not found` };
     }
-    return res.status(202).json(roomUpdated);
+    return roomUpdated;
   }
   
   @MessagePattern(RoomsMSG.DELETE)
-  async deleteRoom(@Payload() id: String, @Res() res: Response){
+  async deleteRoom(@Payload() id: String){
     const roomDeleted = await this.roomsService.deleteRoom(id);
     if(!roomDeleted){
-      return res.status(404).json({ message: `Room with id ${id} Not found` });
+      return { message: `Room with id ${id} Not found` };
     }
-    return res.status(200).json({ message: 'Room Deleted' });
+    return { message: 'Room Deleted' };
   }
 
   // * User In Room Controller
-  @Get(':id/users-room')
-  async getUsersInRoom(@Param('id') roomId: string, @Res() res: Response){
-    let users = await this.roomsService.findUsersInRoom(roomId);
-    if(!users){
-      return res.status(202).json({ message: 'There are not users in room'});
+  @MessagePattern(UserInRoomMSG.FIND_ALL)
+  async getUsersInRoom(@Payload() roomID: string){
+    try{
+      let users = await this.roomsService.findUsersInRoom(roomID);
+      if(users == null){
+        return { message: 'There are not users in room'};
+      }
+      return users;
+    } catch(error) {
+      return { message: 'error: ', err: error.toString()}
     }
-    return res.status(202).json( users );
   }
 
-  @Post(':id/add-user')
-  async addUserToRoom(@Param('id') roomId: string, @Body('userId') userId: string, @Res() res: Response){
-    const userAdded = await this.roomsService.addUserToRoom(roomId, userId);
+  @MessagePattern(UserInRoomMSG.ADD)
+  async addUserToRoom(@Payload() payload){
+    const userAdded = await this.roomsService.addUserToRoom(payload.roomID, payload.userID);
     if(!userAdded){
-      return res.status(404).json({ message: `User with id: ${userId} is already included in room` });
+      return { message: `User with id: ${payload.userID} is already included in room` };
     }
-    return res.status(202).json(userAdded);
+    return userAdded;
   }
 
-  @Put(':id/remove-user')
-  async removeUserInRoom(@Param('id') roomId: string, @Body('userId') userId: string, @Res() res: Response){
-    let userRemoved = await this.roomsService.removeUserInRoom(roomId, userId);
+  @MessagePattern(UserInRoomMSG.REMOVE)
+  async removeUserInRoom(@Payload() payload){
+    let userRemoved = await this.roomsService.removeUserInRoom(payload.roomID, payload.userID);
     if(!userRemoved){
-      return res.status(404).json({ message: `User with id: ${userId} is not included in room` });
-    }
-    return res.status(202).json({ message: 'User Removed' });
+      return { message: `User with id: ${payload.userID} is not included in room` };
+    } 
+    return { message: 'User Removed' };
   }
 
 

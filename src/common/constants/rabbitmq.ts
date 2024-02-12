@@ -10,3 +10,10 @@ export enum RoomsMSG {
   DELETE = "DELETE_ROOM",
   VALIDATE = "VALID_ROOM" 
 }
+
+export enum UserInRoomMSG {
+  ADD = "ADD_USER_ROOM",
+  FIND_ALL = "FIND_USERS_ROOM",
+  REMOVE = "DELETE_USER_ROOM",
+  VALIDATE = "VALID_USER_ROOM" 
+}

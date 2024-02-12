@@ -52,6 +52,7 @@ export class RoomsService {
   // * Add user to room services
   async findUsersInRoom(id: string): Promise<String[] | null>{
     let usersIdObj = await this.roomRepository.findUserInRoom(id);
+    if(usersIdObj==null) return null
     if(!usersIdObj.users.length){
       return null 
     }
